@@ -10,11 +10,9 @@ INSTALL_REQUIRES = [
 with open(os.path.join(CURR_DIR, "README.md"), encoding="utf-8") as file_open:
     LONG_DESCRIPTION = file_open.read()
 
-__version__ = exec(open("questradeist/_version.py").read())
-
 setup(
     name="questradeist",
-    version=__version__,
+    version="0.2.0",
     description="Questrade Python API",
     long_description=LONG_DESCRIPTION,
     long_description_content_type='text/markdown',

@@ -11,7 +11,7 @@ class QuestradeType:
         """
         for k, v in dict.items():
             if k.upper() not in self.fields:
-                raise AttributeError("Invalid questrade field response. Received fields: %s" % dict.keys())
+                raise AttributeError("Invalid questrade field response. Missing %s. Received fields: %s" % (k, dict.keys()))
             setattr(self, k.upper(), v)
 
 class Auth(QuestradeType):
@@ -142,6 +142,7 @@ class Symbol(QuestradeType):
             "ISTRADABLE",
             "ISQUOTABLE",
             "HASOPTIONS",
+            "CURRENCY",
             "MINTICKS",
             "INDUSTRYSECTOR",
             "INDUSTRYGROUP",
@@ -160,4 +161,5 @@ class Candle(QuestradeType):
             "OPEN",
             "CLOSE",
             "VOLUME",
+            "VWAP",
         ]

@@ -1,44 +1,61 @@
 import os
 import datetime
 from questradeist import Questrade
-# TvEaAarTVlULGeB3xx5Tw3vZhw22bBSW0
 
 
 class TestClass():
+
+    SYMBOL = "ENB"
+    SYMBOL_ID = 17356
 
     def setup_class(self):
         refresh_token = os.getenv("QUESTRADE_TOKEN", None)
         assert refresh_token is not None
 
         qt = Questrade(refresh_token=refresh_token)
-        assert qt.token is not None
+        assert qt.access_token is not None
         self.QT = qt
 
     def test_symbol_search(self):
-        symbols = self.QT.symbol_search("ENB")
+        """Searching for stock ticker symbols"""
+        symbols = self.QT.symbol_search(self.SYMBOL)
         assert len(symbols) > 1
-        assert symbols[0].SYMBOL == "ENB"
-        assert symbols[0].SYMBOLID == 17356
+        assert symbols[0].SYMBOL == self.SYMBOL
+        assert symbols[0].SYMBOLID == self.SYMBOL_ID
 
         symbols = self.QT.symbol_search("ENB", raw=True)
         assert isinstance(symbols, dict)
 
-# def test_symbols():
-#     qt = Questrade(refresh_token=refresh_token)
-#     symbols = qt.symbols("ENB")
+    def test_symbols(self):
+        """Retrieving symbol data"""
+        symbols = self.QT.symbols(symbols=[self.SYMBOL,])
+        assert(symbols[0].SYMBOL == self.SYMBOL)
 
-# def test_history():
-#     qt = Questrade(refresh_token=refresh_token)
+        symbols = self.QT.symbols(ids=[self.SYMBOL_ID,])
+        assert(symbols[0].SYMBOL == self.SYMBOL)
+
+        symbols = self.QT.symbols(ids=[self.SYMBOL_ID,], raw=True)
+        assert isinstance(symbols, dict)
+
+        symbols = self.QT.symbols(symbols=[self.SYMBOL,], raw=True)
+        assert isinstance(symbols, dict)
+
+    def test_history(self):
+        """Retrieving EOD data"""
+        end_time = datetime.datetime.today()
+        start_time = end_time - datetime.timedelta(days=30)
+        prices = self.QT.history(self.SYMBOL_ID, start_time, end_time)
+        assert len(prices) > 10
+        for p in prices:
+            assert p.VOLUME != 0
+
+        prices = self.QT.history(self.SYMBOL_ID, start_time, end_time, raw=True)
+        assert isinstance(prices, dict)
 
     def test_quotes(self):
-        quotes = self.QT.quotes([17356, ])
-        assert(quotes[0].SYMBOL == "ENB")
+        """Fetching latest prices for a ticker symbol"""
+        quotes = self.QT.quotes([self.SYMBOL_ID, ])
+        assert(quotes[0].SYMBOL == self.SYMBOL)
 
-        quotes = self.QT.quotes([17356], raw=True)
+        quotes = self.QT.quotes([self.SYMBOL_ID], raw=True)
         assert isinstance(quotes, dict)
-
-# def test_options_quotes():
-#     qt = Questrade(refresh_token=refresh_token)
-
-# def test_symbol_options():
-#     qt = Questrade(refresh_token=refresh_token)
