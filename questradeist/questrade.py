@@ -26,6 +26,11 @@ class Questrade(object):
         return self.ACCESS_TOKEN
 
     @property
+    def refresh_token(self):
+        """Returns the refresh token"""
+        return self.REFRESH_TOKEN
+
+    @property
     def expires(self):
         """Returns the time the access token expires"""
         return self.EXPIRES
@@ -53,7 +58,7 @@ class Questrade(object):
 
             # at least try to trigger a refresh if authentication fails.
             if datetime.datetime.now() > self.expires:
-                qtauth = QuestradeAuth(refresh_token=self.REFRESH_TOKEN)
+                qtauth = QuestradeAuth(refresh_token=self.refresh_token)
                 self._setup(qtauth)
                 r = requests.get(url, headers=header)
                 if r.status_code != 200:
