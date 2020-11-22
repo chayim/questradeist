@@ -9,16 +9,19 @@ from urllib.parse import urljoin
 
 class Questrade(object):
 
-    def __init__(self, access_token: str=None, refresh_token: str=None):
-        qtauth = QuestradeAuth(access_token, refresh_token)
-        self._setup(qtauth)
+    def __init__(self, access_token: str=None, refresh_token: str=None, f: callable=None, expires: datetime.datetime=None):
+        qtauth = QuestradeAuth(access_token, refresh_token, expires)
+        self._setup(qtauth, f)
 
-    def _setup(self, qtauth):
+    def _setup(self, qtauth, f: callable=None):
         """Setup embeds the questrade AUTH api results into this class."""
         setattr(self, "ACCESS_TOKEN", qtauth.AUTH.ACCESS_TOKEN)
         setattr(self, "REFRESH_TOKEN", qtauth.AUTH.REFRESH_TOKEN)
         setattr(self, "API_SERVER", qtauth.AUTH.API_SERVER)
         setattr(self, "EXPIRES", qtauth.AUTH.EXPIRES)
+
+        if f:
+            f(qtauth.AUTH)
 
     @property
     def access_token(self):
@@ -90,7 +93,7 @@ class Questrade(object):
         """
         if not ids and not symbols or ids is not None and symbols is not None:
             raise AttributeError("either a list of ids or symbols must be specified")
-        
+
         if ids:
             qids = ','.join(str(i) for i in ids)
             url = urljoin(self.server, "/v1/symbols/?ids=%s" % qids)
