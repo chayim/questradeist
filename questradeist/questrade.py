@@ -1,13 +1,21 @@
 from questradeist.types import QuestradeType
 from .auth import QuestradeAuth
-from .types import *
-from typing import Optional
 import datetime
 import requests
-from urllib.parse import urljoin
+
+
+def to_datetime(date):
+    """A uniform function for parsing a questrade date and returning a datetime object."""
+    return datetime.datetime.strptime(date, "%Y-%m-%dT00:00:00.000000-%H:%M")
+
+
+def to_datestring(date):
+    """A uniform function for formatting datetime objects like the strings Questrade expects."""
+    return datetime.datetime.strftime(date, "%Y-%m-%dT00:00:00.00-05:00")
 
 
 class Questrade(object):
+    """This is the base call for all questrade operations."""
 
     def __init__(self, access_token: str=None, refresh_token: str=None, f: callable=None, expires: datetime.datetime=None):
         qtauth = QuestradeAuth(access_token, refresh_token, expires)
@@ -43,11 +51,6 @@ class Questrade(object):
         """Returns the API server to be used in Questrade calls"""
         return self.API_SERVER
 
-    @property
-    def refresh_token(self):
-        """Returns the refresh token to be exchanged for an access token"""
-        return self.REFRESH_TOKEN
-
     def _request(self, url: str, qtype: QuestradeType, key: str=None, raw: bool=False):
         """This is a request wrapper. It's meant to be called by other functions.
         qtype - The types.Questrade object that should be used for deserializing data.
@@ -79,63 +82,6 @@ class Questrade(object):
 
         qts = []
         for o in objs:
-            qt = qtype(o)
+            qt = qtype(d=o)
             qts.append(qt)
         return qts
-
-    def symbols(self, ids: Optional[int]=None, symbols: Optional[str]=None, raw: Optional[bool]=False):
-        """Retrieve detailed information about one or more symbol.
-        https://www.questrade.com/api/documentation/rest-operations/market-calls/symbols-id
-
-        ids - A list of one or more questrade stock symbol ids.
-        symbols - A list of one or more stock symbols.
-        raw - If set, return the raw JSON rather than objects of qtype.
-        """
-        if not ids and not symbols or ids is not None and symbols is not None:
-            raise AttributeError("either a list of ids or symbols must be specified")
-
-        if ids:
-            qids = ','.join(str(i) for i in ids)
-            url = urljoin(self.server, "/v1/symbols/?ids=%s" % qids)
-        if symbols:
-            qnames = ','.join(symbols)
-            url = urljoin(self.server, "/v1/symbols/?names=%s" % qnames)
-
-        return self._request(url, qtype=Symbol, key="symbols", raw=raw)
-
-    def symbol_search(self, sym: str, raw: Optional[bool]=False):
-        """Search questrade for a matching stock symbol.
-        https://www.questrade.com/api/documentation/rest-operations/market-calls/symbols-search
-        sym: A string containing a stock symbol
-        raw - If set, return the raw JSON rather than objects of qtype.
-        """
-        url = urljoin(self.server, "/v1/symbols/search?prefix=%s" % sym)
-        return self._request(url, qtype=SearchSymbol, key="symbols", raw=raw)
-
-    def quotes(self, ids: list[int], raw: Optional[bool]=False):
-        """Retrieves the most recent quote data for a list of stock symbols.
-        https://www.questrade.com/api/documentation/rest-operations/market-calls/markets-quotes-id
-        ids - A list of questrade IDs whose stock quote data is to be retrieved.
-        raw - If set, return the raw JSON rather than objects of qtype.
-        """
-        qids = ','.join(str(i) for i in ids)
-        url = urljoin(self.server, "/v1/markets/quotes?ids=%s" % qids)
-        return self._request(url, qtype=Quote, key="quotes", raw=raw)
-
-    def history(self, id: int, start: datetime.datetime, end: datetime.datetime, interval: str="OneDay", raw: Optional[bool]=False):
-        """Returns historical market data in an OHLC candlesick, for the provided symbol.
-        id - An integer containing the internal questrade ID.
-        start - The start time of the candle.
-        end - The end time of the candle.
-        interval - The interval for the candle data.
-        raw - If set, return the raw JSON rather than objects of qtype.
-        """
-        if start > end:
-            start_date = end.strftime("%Y-%m-%dT00:00:00.000000-05:00")
-            end_date = start.strftime("%Y-%m-%dT00:00:00.000000-05:00")
-        else:
-            start_date = start.strftime("%Y-%m-%dT00:00:00.000000-05:00")
-            end_date = end.strftime("%Y-%m-%dT00:00:00.000000-05:00")
-
-        url = urljoin(self.server, "/v1/markets/candles/%s?startTime=%s&endTime=%s&interval=%s" % (id, start_date, end_date, interval))
-        return self._request(url, qtype=Candle, key="candles", raw=raw)

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "questradeist"
-version = "0.2.2"
+version = "0.3.1"
 description = "A library for interacting with the Questrade API."
 authors = ["Chayim I. Kirshen <c@kirshen.com>"]
 license = "MIT"
@@ -8,6 +8,7 @@ license = "MIT"
 [tool.poetry.dependencies]
 python = "^3.9"
 requests = "^2.24.0"
+PyYAML = "^5.3.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.1.2"

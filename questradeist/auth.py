@@ -16,7 +16,7 @@ class QuestradeAuth(object):
         access_token - The token used to access the Questrade API.
         refresh_token - Upon expiration of the access token, this token is used to trigger a refresh
         """
-        if expires is not None:
+        if expires is not None and refresh_token is not None:
             if expires <= datetime.datetime.now():
                 self.refresh(refresh_token)
                 return
@@ -38,12 +38,12 @@ class QuestradeAuth(object):
         refresh_token - The token to be used, exchanging for an access token.
         """
 
-        authapi = "https://login.questrade.com/oauth2/token?grant_type=refresh_token&refresh_token=%s" % refresh_token.decode('utf-8')
+        authapi = "https://login.questrade.com/oauth2/token?grant_type=refresh_token&refresh_token=%s" % refresh_token
         now = datetime.datetime.now()
         r = requests.get(authapi)
 
         if r.status_code != 200:
-            raise requests.exceptions.HTTPError(r.content.decode('utf-8'))
+            raise requests.exceptions.HTTPError(r.content)
 
         self.AUTH = Auth(r.json())
 
