@@ -1,13 +1,23 @@
+import logging
+from typing import Optional
+
+
 class QuestradeType:
     """This class maps the questrade type data back to python objects. An active choice has been made to raise
     an AttributeError when the Questrade API no longer contains a field, or contains new fields.
     """
 
-    def __init__(self, d=None):
+    LOGGER_NAME = "questrade-logger"
+
+    def __init__(self, d: Optional[dict]=None, logger_name: Optional[str]=None):
         """Given that Questrade returns JSON items, all returns result in a dictionary.
         This function takes the dictionary and sets variables on the class object, for
         each key in the dictionary.
         """
+        if logger_name is None:
+            logger = logging.getLogger(self.LOGGER_NAME)
+        else:
+            logger = logging.getLogger(logger_name)
         if d is None:
             return
 
@@ -15,7 +25,7 @@ class QuestradeType:
 
             # sometimes fields are uppercase, sometimes they aren't
             if k.upper() not in self.fields:
-                raise AttributeError("Invalid questrade field response. Missing %s. Received fields: %s" % (k, d.keys()))
+                logger.warning("Invalid questrade field response. Missing %s. Received fields: %s" % (k, d.keys()))
             setattr(self, k.upper(), v)
 
 
@@ -262,4 +272,73 @@ class AccountExecution(QuestradeType):
             "LEGID",
             "CANADIANEXECUTIONFEE",
             "PARENTID",
+        ]
+
+
+class CurrencyBalance(QuestradeType):
+    """CurrencyBalance - the object contained in all sub balance calls."""
+
+    @property
+    def fields(self):
+        return [
+            "CURRENCY",
+            "CASH",
+            "MARKETVALUE",
+            "TOTALEQUITY",
+            "BUYINGPOWER",
+            "MAINTENANCEEXCESS",
+            "ISREALTIME",
+        ]
+
+
+class Order(QuestradeType):
+    """Order - An order created on an account."""
+
+    @property
+    def fields(self):
+        return [
+			"ID",
+			"SYMBOL",
+			"SYMBOLID",
+			"TOTALQUANTITY",
+			"OPENQUANTITY",
+			"FILLEDQUANTITY",
+			"CANCELEDQUANTITY",
+			"SIDE",
+			"TYPE",
+			"LIMITPRICE",
+			"STOPPRICE",
+			"ISALLORNONE",
+			"ISANONYMOUS",
+			"ICEBERGQUANTITY",
+			"MINQUANTITY",
+			"AVGEXECPRICE",
+			"LASTEXECPRICE",
+			"SOURCE",
+			"TIMEINFORCE",
+			"GTDDATE",
+			"STATE",
+            "REJECTIONREASON"
+			"CHAINID",
+			"CREATIONTIME",
+			"UPDATETIME",
+			"NOTES",
+			"PRIMARYROUTE",
+			"SECONDARYROUTE",
+			"ORDERROUTE",
+			"VENUEHOLDINGORDER",
+			"COMISSIONCHARGED",
+			"EXCHANGEORDERID",
+			"ISSIGNIFICANTSHAREHOLDER",
+			"ISINSIDER",
+			"ISLIMITOFFSETINDOLLAR",
+			"USERID",
+			"PLACEMENTCOMMISSION",
+			"LEGS",
+			"STRATEGYTYPE",
+			"TRIGGERSTOPPRICE",
+			"ORDERGROUPID",
+			"ORDERCLASS",
+            "ORDERTYPE",
+            "ISCROSSZERO",
         ]

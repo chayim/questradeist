@@ -2,7 +2,7 @@ from .questrade import Questrade, to_datestring
 import datetime
 from typing import Optional
 from urllib.parse import urljoin
-from .types import AccountActivity, AccountExecution, AccountPosition, TradingAccount
+from .types import *
 
 
 class Account(Questrade):
@@ -75,3 +75,43 @@ class Account(Questrade):
 
         url = urljoin(self.server, "/v1/accounts/%d/executions?startTime=%s&endTime=%s" % (id, start_date, end_date))
         return self._request(url, qtype=AccountExecution, key="executions", raw=raw)
+
+    def balances(self, id: int, raw: Optional[bool]=False):
+        """Return the cash balances associated with the questrade account.
+        https://www.questrade.com/api/documentation/rest-operations/account-calls/accounts-id-balances
+
+        id - An integer containing the account ID.
+        raw - If set, return the raw JSON rather than objects of qtype.
+        """
+
+        url = urljoin(self.server, "/v1/accounts/%d/balances" % id)
+        return self._request(url, qtype=CurrencyBalance, key="perCurrencyBalances", raw=raw)
+
+    def orders(self, id: int, start: Optional[datetime.datetime]=None, end: Optional[datetime.datetime]=None, state: Optional[str]='All', raw: Optional[bool]=False):
+        """Return the account executions - actions including buys, sells, and dividends, amongst other things.
+        https://www.questrade.com/api/documentation/rest-operations/account-calls/accounts-id-orders
+
+        id - An integer containing the account ID.
+        start - The start time of transactions
+        end - The end time of the transactons
+        raw - If set, return the raw JSON rather than objects of qtype.
+        """
+
+        valid_states = ['All', 'Open', 'Closed']
+        if state not in valid_states:
+            raise AttributeError("Invalid state. State must be one of %s" % valid_states)
+
+        if start is None:
+            url = urljoin(self.server, "/v1/accounts/%d/orders&stateFilter=%s" % (id, state))
+            return self._request(url, qtype=Order, key="orders", raw=raw)
+
+        start_date, end_date = None, None
+        if start > end:
+            start_date = to_datestring(end)
+            end_date = to_datestring(start)
+        else:
+            start_date = to_datestring(start)
+            end_date = to_datestring(end)
+
+        url = urljoin(self.server, "/v1/accounts/%d/orders?startTime=%s&endTime=%s" % (id, start_date, end_date))
+        return self._request(url, qtype=Order, key="orders", raw=raw)

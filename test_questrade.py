@@ -110,3 +110,24 @@ class TestClass():
         assert(len(executions) > 0)
         for e in executions:
             assert(e.SYMBOLID != '')
+
+    def test_account_currency_balances(self):
+        """Fetch the account balances"""
+        self._configure(Account)
+        accounts = self.QT.get_all()
+        executions = self.QT.balances(int(accounts[0].NUMBER))
+        assert(len(executions) > 0)
+        for e in executions:
+            assert(e.CURRENCY != '')
+
+    def test_account_orders(self):
+        """Test fetching orders for an account."""
+        self._configure(Account)
+        accounts = self.QT.get_all()
+        today = datetime.datetime.today()
+        month_ago = today - datetime.timedelta(days=30)
+        orders = self.QT.orders(int(accounts[0].NUMBER), today, month_ago, state='Closed')
+        print(orders)
+        assert(len(orders) > 0)
+        for o in orders:
+            assert(o.TOTALQUANTITY > 0)
