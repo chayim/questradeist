@@ -51,6 +51,13 @@ class Questrade(object):
         """Returns the API server to be used in Questrade calls"""
         return self.API_SERVER
 
+    def time(self):
+        """Call the Questrade time api, and return the time associated
+        with the service.
+        """
+        url = "/v1/time"
+        return self._request(url, qtype=None, raw=True)
+
     def _request(self, url: str, qtype: QuestradeType, key: str=None, raw: bool=False):
         """This is a request wrapper. It's meant to be called by other functions.
         qtype - The types.Questrade object that should be used for deserializing data.
