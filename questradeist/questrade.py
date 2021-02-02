@@ -1,4 +1,5 @@
 from questradeist.types import QuestradeType
+from urllib.parse import urljoin
 from .auth import QuestradeAuth
 import datetime
 import requests
@@ -55,7 +56,7 @@ class Questrade(object):
         """Call the Questrade time api, and return the time associated
         with the service.
         """
-        url = "/v1/time"
+        url = urljoin(self.server, "/v1/time")
         return self._request(url, qtype=None, raw=True)
 
     def _request(self, url: str, qtype: QuestradeType, key: str=None, raw: bool=False):
